@@ -3,6 +3,11 @@
 #include <ctype.h>
 #include <time.h>
 
+// https://stackoverflow.com/questions/3219393/stdlib-and-colored-output-in-c
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
+
 // https://www.cs.yale.edu/homes/aspnes/pinewiki/C(2f)Randomization.html
 // how to generate random numbers
 
@@ -58,7 +63,7 @@ int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
         }
     }
 
-    printf("\noptions: \nn: %d\nr: %d \np: %d \nN: %d \n", *n,*r,*p,*N);
+    // printf("\noptions: \nn: %d\nr: %d \np: %d \nN: %d \n", *n,*r,*p,*N);
 
     if (*n <= 0 || *r <= 0 || *N <= 0 || *p<0){
         return errorIncorrectUsage();
@@ -104,28 +109,23 @@ int main(int argc, char** argv){
 
     }
 
-    // label powerball column
-    if (p != 0){
-        // trying to place the powerball label in the right spot
-        for (i = 0; i < n-1; i++){
-            printf("  ");
-        }
-        printf("pb!\n");
-    }
-
 
     for (i = 0; i < N; i++){
         int j;
-        for (j = 0; j < n; j++){
+        for (j = 0; j < n-1; j++){
             printf("%d ", sets[i][j]);
         }
-        printf("\n");
-        for (j = 0; j < n; j++){
-            printf("--");
-        }
-        printf("\n");
-    }
 
+        // label powerball column
+        if (p != 0){
+            printf(ANSI_COLOR_RED "%d" ANSI_COLOR_RESET, sets[i][j]);
+        }
+        else{
+            printf("%d ", sets[i][j]);
+        }
+
+        printf("\n\n");   
+    }
 
     return 0;
 }
