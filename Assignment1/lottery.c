@@ -60,7 +60,7 @@ int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
 
     printf("\noptions: \nn: %d\nr: %d \np: %d \nN: %d \n", *n,*r,*p,*N);
 
-    if (*n <= 0 || *r <= 0 || *N <= 0){
+    if (*n <= 0 || *r <= 0 || *N <= 0 || *p<0){
         return errorIncorrectUsage();
     }
 
