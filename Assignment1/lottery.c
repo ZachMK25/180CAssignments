@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <time.h>
+#include <string.h>
 
 // https://stackoverflow.com/questions/3219393/stdlib-and-colored-output-in-c
 #define ANSI_COLOR_RED     "\x1b[31m"
@@ -20,18 +21,16 @@ int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
 
     // input validation
     
-    // must have an odd number of arguments
-    // program name + some number of pairs of options and values
-    if ((argc & 1) != 1){
+    // must have either 7 or 9 arguments, depending on if p is included
+    if (!(argc == 7 || argc == 9)){
         return errorIncorrectUsage();
     }
 
     int i = 0;
     for (i = 1; i < argc - 1; i+=2) {
 
-        // this does not feel safe. need to figure out how to check for string of length 2
-        if (!isalpha(argv[i][1])){
-            printf("error");
+        // stop the program before reading an index that wouldn't be defined
+        if (((int)strlen(argv[i]) != 2) || !isalpha(argv[i][1])){
             return errorIncorrectUsage();
         }
 
