@@ -59,6 +59,9 @@ int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
                 passed = strtol(argv[i+1], &ptrend, 10);
                 *N = passed;
                 break;
+            default:
+                printf("invalid option passed: -%c\n", option);
+                return errorIncorrectUsage();
         }
     }
 
