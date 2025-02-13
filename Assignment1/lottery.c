@@ -15,9 +15,9 @@
 // https://www.cs.yale.edu/homes/aspnes/pinewiki/C(2f)Randomization.html
 // how to generate random numbers
 
-int errorIncorrectUsage(int errno){
+int errorIncorrectUsage(int err){
     printf("\nUsage: ./lottery -n [Numbers to Generate, int >= 1] -r [Max Number, int >= 1] (optional: -p [Max Powerball Number, int >= 0]) -N [Numbers of Sets to Generate, int >= 1]\n");
-    return errno;
+    return err;
 }
 
 int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
@@ -85,14 +85,13 @@ int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
 
     // optind is for the extra arguments 
     // which are not parsed 
-    if (optind >= argc){      
-        printf("more arguments passed than expected\n");
+    if (optind < argc){      
+        printf("More arguments passed than expected\n");
         return errorIncorrectUsage(E2BIG);
-    } 
-    
+    }
 
     if (*n <= 0 || *r <= 0 || *N <= 0 || *p<0){
-        printf("one or more of the option arguments passed violates the valid range of inputs\n");
+        printf("One or more of the option arguments passed violates the valid range of inputs\n");
         return errorIncorrectUsage(EINVAL);
     }
 
