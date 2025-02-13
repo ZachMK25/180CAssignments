@@ -97,16 +97,16 @@ int main(int argc, char** argv){
 
         int j;
         for (j = 0; j < n-1; j++){
-            sets[i][j] = rand() % r;
+            sets[i][j] = (rand() % r) + 1;
         }
 
         // special powerball case at the end
         if (p != 0){
-            sets[i][j] = rand() % p;
+            sets[i][j] = (rand() % p) + 1;
         }
         // otherwise treat it like a normal number and use the other range
         else{
-            sets[i][j] = rand() % r;
+            sets[i][j] = (rand() % r) + 1;
         }
 
     }
@@ -115,7 +115,7 @@ int main(int argc, char** argv){
     for (i = 0; i < N; i++){
         int j;
         for (j = 0; j < n-1; j++){
-            printf("%d ", sets[i][j]);
+            printf("%d, ", sets[i][j]);
         }
 
         // label powerball column
@@ -123,7 +123,7 @@ int main(int argc, char** argv){
             printf(ANSI_COLOR_RED "%d" ANSI_COLOR_RESET, sets[i][j]);
         }
         else{
-            printf("%d ", sets[i][j]);
+            printf("%d", sets[i][j]);
         }
 
         printf("\n\n");   
