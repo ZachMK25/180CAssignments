@@ -4,27 +4,25 @@
 #include <time.h>
 #include <string.h>
 #include <unistd.h>  
+#include <errno.h>
 
 
 // https://stackoverflow.com/questions/3219393/stdlib-and-colored-output-in-c
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
-#define ANSI_COLOR_MAGENTA "\x1b[35m"
 
 
 // https://www.cs.yale.edu/homes/aspnes/pinewiki/C(2f)Randomization.html
 // how to generate random numbers
 
-int errorIncorrectUsage(){
+int errorIncorrectUsage(int errno){
     printf("\nUsage: ./lottery -n [Numbers to Generate, int >= 1] -r [Max Number, int >= 1] (optional: -p [Max Powerball Number, int >= 0]) -N [Numbers of Sets to Generate, int >= 1]\n");
-    return 1;
+    return errno;
 }
 
 int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
 
     // input validation
-    
-
     int opt;
     int passed;
     
@@ -38,6 +36,7 @@ int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
                 // enforce integer
                 if (passed == 0 && optarg[0] != '0'){
                     fprintf(stderr, "Error: -n requires a valid integer argument.\n");
+                    return errorIncorrectUsage(EINVAL);
                 }
 
                 *n = passed;
@@ -50,6 +49,7 @@ int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
                 // enforce integer
                 if (passed == 0 && optarg[0] != '0'){
                     fprintf(stderr, "Error: -r requires a valid integer argument.\n");
+                    return errorIncorrectUsage(EINVAL);
                 }
                 *r = passed;
                 // printf("%c = %d\n", opt, *r);
@@ -61,6 +61,7 @@ int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
                 // enforce integer
                 if (passed == 0 && optarg[0] != '0'){
                     fprintf(stderr, "Error: -p requires a valid integer argument.\n");
+                    return errorIncorrectUsage(EINVAL);
                 }
                 *p = passed;
                 // printf("%c = %d\n", opt, *p);
@@ -71,26 +72,28 @@ int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
                 // enforce integer
                 if (passed == 0 && optarg[0] != '0'){
                     fprintf(stderr, "Error: -N requires a valid integer argument.\n");
+                    return errorIncorrectUsage(EINVAL);
                 }
                 *N = passed;
                 // printf("%c = %d\n", opt, *N);
                 break;
 
             case '?':
-                return errorIncorrectUsage();
-        }
+                return errorIncorrectUsage(EINVAL);
+            }
     }
 
     // optind is for the extra arguments 
     // which are not parsed 
-    if (optind > argc){      
+    if (optind >= argc){      
         printf("more arguments passed than expected\n");
-        errorIncorrectUsage();
+        return errorIncorrectUsage(E2BIG);
     } 
     
 
     if (*n <= 0 || *r <= 0 || *N <= 0 || *p<0){
-        return errorIncorrectUsage();
+        printf("one or more of the option arguments passed violates the valid range of inputs\n");
+        return errorIncorrectUsage(EINVAL);
     }
 
     printf("\n");
@@ -116,7 +119,7 @@ int main(int argc, char** argv){
     int i;
 
     if (p){
-        printf(ANSI_COLOR_MAGENTA "Powerball numbers are labeled in this color\n\n" ANSI_COLOR_RESET);
+        printf(ANSI_COLOR_RED "Powerball numbers are labeled in this color\n\n" ANSI_COLOR_RESET);
     }
 
 
@@ -145,7 +148,7 @@ int main(int argc, char** argv){
 
         // label powerball column
         if (p != 0){
-            printf(ANSI_COLOR_MAGENTA "%d" ANSI_COLOR_RESET, sets[i][j]);
+            printf(ANSI_COLOR_RED "%d" ANSI_COLOR_RESET, sets[i][j]);
         }
         else{
             printf("%d", sets[i][j]);
