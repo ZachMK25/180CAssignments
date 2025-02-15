@@ -1,0 +1,99 @@
+Running ./lottery with arguments: -N 0 -p 10 -r 10 -n 5
+N out of range, must be N>0
+
+Usage: ./lottery -n [Numbers to Generate, int >= 1] -r [Max Number, int >= 1] (optional: -p [Max Powerball Number, int >= 0]) -N [Numbers of Sets to Generate, int >= 1]
+Error: Return value does not match expected
+Expected: 22, Actual: 1
+Exit code: 1 (EPERM 1 Operation not permitted)
+----------------------------------------
+Running ./lottery with arguments: -N 5 -p 10 -r 10
+n out of range, must be n>0
+
+Usage: ./lottery -n [Numbers to Generate, int >= 1] -r [Max Number, int >= 1] (optional: -p [Max Powerball Number, int >= 0]) -N [Numbers of Sets to Generate, int >= 1]
+Success: Return value matches expected (1)
+Exit code: 1 (EPERM 1 Operation not permitted)
+----------------------------------------
+Running ./lottery with arguments: -N 5 -p 10 -r 10 -n -5
+n out of range, must be n>0
+
+Usage: ./lottery -n [Numbers to Generate, int >= 1] -r [Max Number, int >= 1] (optional: -p [Max Powerball Number, int >= 0]) -N [Numbers of Sets to Generate, int >= 1]
+Success: Return value matches expected (1)
+Exit code: 1 (EPERM 1 Operation not permitted)
+----------------------------------------
+Running ./lottery with arguments: -N 5 -p 10 -r 10
+n out of range, must be n>0
+
+Usage: ./lottery -n [Numbers to Generate, int >= 1] -r [Max Number, int >= 1] (optional: -p [Max Powerball Number, int >= 0]) -N [Numbers of Sets to Generate, int >= 1]
+Success: Return value matches expected (1)
+Exit code: 1 (EPERM 1 Operation not permitted)
+----------------------------------------
+Running ./lottery with arguments: -N 5 -p 10 -n 5
+r out of range, must be r>0
+
+Usage: ./lottery -n [Numbers to Generate, int >= 1] -r [Max Number, int >= 1] (optional: -p [Max Powerball Number, int >= 0]) -N [Numbers of Sets to Generate, int >= 1]
+Success: Return value matches expected (1)
+Exit code: 1 (EPERM 1 Operation not permitted)
+----------------------------------------
+Running ./lottery with arguments: -N 5 -p 10 -r 10 -n hi
+Error: -n requires a valid integer argument.
+
+Usage: ./lottery -n [Numbers to Generate, int >= 1] -r [Max Number, int >= 1] (optional: -p [Max Powerball Number, int >= 0]) -N [Numbers of Sets to Generate, int >= 1]
+Success: Return value matches expected (22)
+Exit code: 22 (EINVAL 22 Invalid argument)
+----------------------------------------
+Running ./lottery with arguments: -N 5 -p hello -r 10 -n 5
+Error: -p requires a valid integer argument.
+
+Usage: ./lottery -n [Numbers to Generate, int >= 1] -r [Max Number, int >= 1] (optional: -p [Max Powerball Number, int >= 0]) -N [Numbers of Sets to Generate, int >= 1]
+Success: Return value matches expected (22)
+Exit code: 22 (EINVAL 22 Invalid argument)
+----------------------------------------
+Running ./lottery with arguments: -N 5 -p e -r 10 -n 5
+Error: -p requires a valid integer argument.
+
+Usage: ./lottery -n [Numbers to Generate, int >= 1] -r [Max Number, int >= 1] (optional: -p [Max Powerball Number, int >= 0]) -N [Numbers of Sets to Generate, int >= 1]
+Success: Return value matches expected (22)
+Exit code: 22 (EINVAL 22 Invalid argument)
+----------------------------------------
+Running ./lottery with arguments: -g -N 10 -r 10 -n 5 -p 1
+./lottery: invalid option -- 'g'
+
+Usage: ./lottery -n [Numbers to Generate, int >= 1] -r [Max Number, int >= 1] (optional: -p [Max Powerball Number, int >= 0]) -N [Numbers of Sets to Generate, int >= 1]
+Success: Return value matches expected (22)
+Exit code: 22 (EINVAL 22 Invalid argument)
+----------------------------------------
+Running ./lottery with arguments: -N 10 -r 10 -n 5 -p 1 blahblahblah
+More arguments passed than expected
+
+Usage: ./lottery -n [Numbers to Generate, int >= 1] -r [Max Number, int >= 1] (optional: -p [Max Powerball Number, int >= 0]) -N [Numbers of Sets to Generate, int >= 1]
+Success: Return value matches expected (7)
+Exit code: 7 (E2BIG 7 Argument list too long)
+----------------------------------------
+Running ./lottery with arguments: -N 5 -p 0 -r 10 -n 5
+
+4, 8, 6, 8, 2
+
+2, 6, 10, 8, 6
+
+10, 5, 8, 7, 2
+
+10, 10, 3, 10, 5
+
+1, 4, 2, 4, 3
+
+Success: Return value matches expected (0)
+----------------------------------------
+Running ./lottery with arguments: -N 5 -r 10 -n 5
+
+4, 8, 6, 8, 2
+
+2, 6, 10, 8, 6
+
+10, 5, 8, 7, 2
+
+10, 10, 3, 10, 5
+
+1, 4, 2, 4, 3
+
+Success: Return value matches expected (0)
+----------------------------------------

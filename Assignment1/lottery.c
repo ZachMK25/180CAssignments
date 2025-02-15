@@ -25,6 +25,8 @@ int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
     // input validation
     int opt;
     int passed;
+    extern int optind;
+    extern char* optarg;
     
     while((opt = getopt(argc, argv, "n:N:r:p:")) != -1){
 
@@ -36,10 +38,6 @@ int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
                 // enforce integer
                 if (passed == 0 && optarg[0] != '0'){
                     fprintf(stderr, "Error: -n requires a valid integer argument.\n");
-                    return errorIncorrectUsage(EINVAL);
-                }
-                else if (passed < 0){
-                    printf("n out of range, must be n>0\n");
                     return errorIncorrectUsage(EINVAL);
                 }
 
@@ -55,10 +53,7 @@ int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
                     fprintf(stderr, "Error: -r requires a valid integer argument.\n");
                     return errorIncorrectUsage(EINVAL);
                 }
-                else if (passed < 0){
-                    printf("r out of range, must be r>0\n");
-                    return errorIncorrectUsage(EINVAL);
-                }
+                
                 *r = passed;
                 // printf("%c = %d\n", opt, *r);
 
@@ -71,12 +66,7 @@ int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
                     fprintf(stderr, "Error: -p requires a valid integer argument.\n");
                     return errorIncorrectUsage(EINVAL);
                 }
-                else if (passed < 0){
-                    printf("p out of range, must be p>0\n");
-                    return errorIncorrectUsage(EINVAL);
-                }
                 *p = passed;
-                // printf("%c = %d\n", opt, *p);
                 break;
 
             case 'N':
@@ -86,12 +76,7 @@ int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
                     fprintf(stderr, "Error: -N requires a valid integer argument.\n");
                     return errorIncorrectUsage(EINVAL);
                 }
-                else if (passed < 0){
-                    printf("N out of range, must be N>0\n");
-                    return errorIncorrectUsage(EINVAL);
-                }
                 *N = passed;
-                // printf("%c = %d\n", opt, *N);
                 break;
 
             case '?':
@@ -106,8 +91,22 @@ int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
         return errorIncorrectUsage(E2BIG);
     }
 
-    if (*n <= 0 || *r <= 0 || *N <= 0 || *p<0){
-        
+
+    if (*r <= 0){
+        printf("r out of range, must be r>0\n");
+        return errorIncorrectUsage(EPERM);
+    }
+    else if (*n <= 0){
+        printf("n out of range, must be n>0\n");
+        return errorIncorrectUsage(EPERM);
+    }
+    else if (*N <= 0){
+        printf("N out of range, must be N>0\n");
+        return errorIncorrectUsage(EPERM);
+    }
+    else if (*p < 0){
+        printf("p out of range, must be p>0\n");
+        return errorIncorrectUsage(EPERM);
     }
 
     printf("\n");
