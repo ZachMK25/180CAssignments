@@ -29,17 +29,12 @@ void parent_signal_handler(int sig){
 }
 
 int main(){
-    printf("\nMe when I fork\n");
 
     pid = fork();
 
     if (pid < 0){
-        printf("\nFork unsuccessful :(\n");
-
         exit(ECHILD);
     }
-
-    printf("\nFork successful!\n");
 
     if (pid == 0){
         // I am the child process
