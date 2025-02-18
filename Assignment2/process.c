@@ -28,7 +28,7 @@ void parent_signal_handler(int sig){
     }
 }
 
-int main(){
+int main(int argc, char** argv){
 
     pid = fork();
 
