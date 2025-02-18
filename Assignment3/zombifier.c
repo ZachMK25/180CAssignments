@@ -10,7 +10,6 @@
 #include <sys/wait.h>
 
 
-pid_t pid = -1;
 int i, n;
 pid_t* children = NULL;
 
@@ -25,23 +24,17 @@ void child_signal_handler(int sig){
         return;
     }
     else if (sig == SIGINT) {
-        printf("And I slaughtered them like animals\n");
+        printf("zombie interupted\n");
         exit(EIO);
     }
 }
 
 void parent_signal_handler(int sig){
     
-    // if (sig == SIGCONT){
+    if (sig == SIGCONT){
         
-    //     for (i = 0; i < n; i ++){
-    //         kill(children[i], SIGCONT);
-    //     }
-
-    //     free(children);
-
-    //     exit(0);
-    // }
+        return;
+    }
     if (sig == SIGINT){
         
         for (i = 0; i < n; i ++){
@@ -56,10 +49,10 @@ void parent_signal_handler(int sig){
 
 int childFunction(){
     // I am the child process
-    printf("%d\n",pid);
 
     signal(SIGCONT, child_signal_handler);
     signal(SIGINT, child_signal_handler);
+    printf("Zombie ready\n");
 
     pause();
 
@@ -112,12 +105,15 @@ int main(int argc, char** argv){
         exit(1);
     }
     
+    
     for (i = 0; i < n; i++){
         // https://search.brave.com/search?q=handling+multiple+children+c&source=desktop
-        if ((children[i] = fork()) < 0){
+        children[i] = fork();
+        if (children[i] < 0){
             exit(ECHILD);
         }
         else if (children[i] == 0){
+            // trap children in child function, which they must exit() from
             childFunction();
         }
         else{
@@ -125,22 +121,13 @@ int main(int argc, char** argv){
         }
     }
 
+    printf("Parent pid %d\n", getpid());
 
     // parent process
     signal(SIGCONT, parent_signal_handler);
     signal(SIGINT, parent_signal_handler);
 
     pause();
-
-
-    // https://search.brave.com/search?q=handling+multiple+children+c&source=desktop
-    int status;
-    pid_t pid;
-    while (n > 0) {
-        pid = wait(&status);
-        printf("Child with PID %ld exited with status 0x%x.\n", (long)pid, status);
-        --n;  // TODO(pts): Remove pid from the pids array.
-    }
 
     for (i = 0; i < n; i ++){
         kill(children[i], SIGCONT);
