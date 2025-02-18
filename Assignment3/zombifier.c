@@ -36,6 +36,8 @@ void parent_signal_handler(int sig){
         return;
     }
     if (sig == SIGINT){
+
+        printf("process interrupted, cleaning up\n");
         
         for (i = 0; i < n; i ++){
             kill(children[i], SIGINT);
@@ -102,9 +104,8 @@ int main(int argc, char** argv){
 
     if (children == NULL){
         printf("Malloc Failed\n");
-        exit(1);
+        exit(ENOMEM);
     }
-    
     
     for (i = 0; i < n; i++){
         // https://search.brave.com/search?q=handling+multiple+children+c&source=desktop
@@ -116,9 +117,9 @@ int main(int argc, char** argv){
             // trap children in child function, which they must exit() from
             childFunction();
         }
-        else{
-            printf("%d\n", children[i]);
-        }
+        // else{
+        //     printf("%d\n", children[i]);
+        // }
     }
 
     printf("Parent pid %d\n", getpid());
@@ -135,5 +136,5 @@ int main(int argc, char** argv){
 
     free(children);
 
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
