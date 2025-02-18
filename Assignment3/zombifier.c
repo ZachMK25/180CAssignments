@@ -23,10 +23,10 @@ void child_signal_handler(int sig){
     if (sig == SIGCONT){
         return;
     }
-    else if (sig == SIGINT) {
-        printf("zombie interupted\n");
-        exit(EIO);
-    }
+    // else if (sig == SIGINT) {
+    //     printf("zombie interupted\n");
+    //     exit(EIO);
+    // }
 }
 
 void parent_signal_handler(int sig){
@@ -37,11 +37,13 @@ void parent_signal_handler(int sig){
     }
     if (sig == SIGINT){
 
-        printf("process interrupted, cleaning up\n");
+        // am I not supposed to handle SIGINT in order to create zombies?
+
+        // printf("process interrupted, cleaning up\n");
         
-        for (i = 0; i < n; i ++){
-            kill(children[i], SIGINT);
-        }
+        // for (i = 0; i < n; i ++){
+        //     kill(children[i], SIGINT);
+        // }
 
         free(children);
 
@@ -53,8 +55,8 @@ int childFunction(){
     // I am the child process
 
     signal(SIGCONT, child_signal_handler);
-    signal(SIGINT, child_signal_handler);
-    printf("Zombie ready\n");
+    // signal(SIGINT, child_signal_handler);
+    printf("Child pid %d\n", getpid());
 
     pause();
 
