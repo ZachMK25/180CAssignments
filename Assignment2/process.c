@@ -43,9 +43,8 @@ int main(){
         signal(SIGINT, child_signal_handler);
 
         pause();
-        
-        // printf("done pausing?\n");
 
+        printf("resuming...\n");
         exit(EIO);
     }
     else{
