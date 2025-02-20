@@ -15,8 +15,8 @@
 // https://www.cs.yale.edu/homes/aspnes/pinewiki/C(2f)Randomization.html
 // how to generate random numbers
 
-int errorIncorrectUsage(int err){
-    printf("\nUsage: ./lottery -n [Numbers to Generate, int >= 1] -r [Max Number, int >= 1] (optional: -p [Max Powerball Number, int >= 0]) -N [Numbers of Sets to Generate, int >= 1]\n");
+int errorIncorrectUsage(int err, char** argv){
+    printf("\nUsage: ./%s -n [Numbers to Generate, int >= 1] -r [Max Number, int >= 1] (optional: -p [Max Powerball Number, int >= 0]) -N [Numbers of Sets to Generate, int >= 1]\n", argv[0]);
     return err;
 }
 
@@ -30,15 +30,13 @@ int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
     
     while((opt = getopt(argc, argv, "n:N:r:p:")) != -1){
 
-        // USE GETOPTIONS INSTEAD
-
         switch(opt){
             case 'n':
                 passed = atoi(optarg);
                 // enforce integer
                 if (passed == 0 && optarg[0] != '0'){
                     fprintf(stderr, "Error: -n requires a valid integer argument.\n");
-                    return errorIncorrectUsage(EINVAL);
+                    return errorIncorrectUsage(EINVAL, argv);
                 }
 
                 *n = passed;
@@ -51,7 +49,7 @@ int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
                 // enforce integer
                 if (passed == 0 && optarg[0] != '0'){
                     fprintf(stderr, "Error: -r requires a valid integer argument.\n");
-                    return errorIncorrectUsage(EINVAL);
+                    return errorIncorrectUsage(EINVAL, argv);
                 }
                 
                 *r = passed;
@@ -64,7 +62,7 @@ int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
                 // enforce integer
                 if (passed == 0 && optarg[0] != '0'){
                     fprintf(stderr, "Error: -p requires a valid integer argument.\n");
-                    return errorIncorrectUsage(EINVAL);
+                    return errorIncorrectUsage(EINVAL, argv);
                 }
                 *p = passed;
                 break;
@@ -74,13 +72,13 @@ int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
                 // enforce integer
                 if (passed == 0 && optarg[0] != '0'){
                     fprintf(stderr, "Error: -N requires a valid integer argument.\n");
-                    return errorIncorrectUsage(EINVAL);
+                    return errorIncorrectUsage(EINVAL, argv);
                 }
                 *N = passed;
                 break;
 
             case '?':
-                return errorIncorrectUsage(EINVAL);
+                return errorIncorrectUsage(EINVAL, argv);
             }
     }
 
@@ -88,25 +86,25 @@ int validateOptions(int argc, char** argv, int* n, int* r, int* p, int* N){
     // which are not parsed 
     if (optind < argc){      
         printf("More arguments passed than expected\n");
-        return errorIncorrectUsage(E2BIG);
+        return errorIncorrectUsage(E2BIG, argv);
     }
 
 
     if (*r <= 0){
         printf("r out of range, must be r>0\n");
-        return errorIncorrectUsage(EPERM);
+        return errorIncorrectUsage(EPERM, argv);
     }
     else if (*n <= 0){
         printf("n out of range, must be n>0\n");
-        return errorIncorrectUsage(EPERM);
+        return errorIncorrectUsage(EPERM, argv);
     }
     else if (*N <= 0){
         printf("N out of range, must be N>0\n");
-        return errorIncorrectUsage(EPERM);
+        return errorIncorrectUsage(EPERM, argv);
     }
     else if (*p < 0){
         printf("p out of range, must be p>0\n");
-        return errorIncorrectUsage(EPERM);
+        return errorIncorrectUsage(EPERM, argv);
     }
 
     printf("\n");
@@ -158,14 +156,14 @@ int main(int argc, char** argv){
         for (j = 0; j < n-1; j++){
             printf("%d, ", sets[i][j]);
         }
+        // no trailing commas or whitespace
+        printf("%d", sets[i][j]);
 
         // label powerball column
         if (p != 0){
-            printf(ANSI_COLOR_RED "%d" ANSI_COLOR_RESET, sets[i][j]);
+            printf(ANSI_COLOR_RED ", %d" ANSI_COLOR_RESET, sets[i][j]);
         }
-        else{
-            printf("%d", sets[i][j]);
-        }
+
         printf("\n\n");   
     }
 
