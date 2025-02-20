@@ -161,7 +161,8 @@ int main(int argc, char** argv){
 
         // label powerball column
         if (p != 0){
-            printf(ANSI_COLOR_RED ", %d" ANSI_COLOR_RESET, sets[i][j]);
+            printf(", ");
+            printf(ANSI_COLOR_RED "%d" ANSI_COLOR_RESET, sets[i][j]);
         }
 
         printf("\n\n");   
