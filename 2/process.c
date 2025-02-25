@@ -11,7 +11,7 @@ pid_t pid = -1;
 
 void child_signal_handler(int sig){
     
-    if (sig == SIGCONT){
+    if (sig == SIGINT){
         return;
     }
     else {
@@ -21,9 +21,7 @@ void child_signal_handler(int sig){
 
 void parent_signal_handler(int sig){
     if (sig == SIGINT){
-        if (pid > 0){
-            kill(pid, SIGINT);
-        }
+        kill(pid, SIGINT);
         exit(EOWNERDEAD);
     }
 }
@@ -38,24 +36,23 @@ int main(int argc, char** argv){
 
     if (pid == 0){
         // I am the child process
-        printf("%d\n",pid);
         signal(SIGCONT, child_signal_handler);
         signal(SIGINT, child_signal_handler);
 
         pause();
 
-        printf("resuming...\n");
         exit(EIO);
     }
     else{
         // Fork's return value is not 0
         // which means we are in the parent process
+        printf("%d\n", getpid());
         signal(SIGINT, parent_signal_handler);
 
         // is there another way that I should suspend the parent process to give the child time to print?
         sleep(2);
 
-        kill(pid, SIGCONT);
+        kill(pid, SIGINT);
         int status;
         
         wait(&status);
