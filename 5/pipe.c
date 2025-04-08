@@ -9,8 +9,9 @@
 #define WRITE 1
 
 int main(){
-    // I am your daddy! and my name is <PID>
+    // I am your daddy! and my name is <PID>\n
     int MSGSIZE1 = 33 + 10;
+    // Daddy, my name is <PID>\n
     int MSGSIZE2 = 19 + 10;
 
     char inbuf1[MSGSIZE1];
@@ -19,13 +20,15 @@ int main(){
     int to_child[2];
     int to_parent[2];
 
+    // check for pipe failures
     if (pipe(to_child) < 0)
-        exit(1);
+        exit(EPIPE);
     if (pipe(to_parent) < 0)
-        exit(1);
+        exit(EPIPE);
 
     int pid = fork();
 
+    if (pid < 0) exit (ECHILD);
     // https://www.geeksforgeeks.org/pipe-system-call/
 
     if (pid > 0){

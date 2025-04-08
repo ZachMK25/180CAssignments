@@ -19,7 +19,7 @@ void signal_handler(int sig){
         printf("terminating loop gracefully");
         exit(0);
     }
-    
+
 }
 
 int main(int argc, char** argv){
