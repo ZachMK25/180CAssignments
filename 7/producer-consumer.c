@@ -11,6 +11,24 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <semaphore.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+
+#define SHM_NAME "/my_shared_mem"
+#define SEM_EMPTY_NAME "/sem_empty"
+#define SEM_FULL_NAME "/sem_full"
+#define SEM_MUTEX_NAME "/sem_mutex"
+
+#define MAX_MSG_LEN 256
+#define MAX_QUEUE_SIZE 64
+
+typedef struct {
+    char messages[MAX_QUEUE_SIZE][MAX_MSG_LEN];
+    int in;
+    int out;
+    int size;
+} SharedQueue;
 
 #define SOCKET_PATH "/tmp/producer_consumer_socket"
 
@@ -32,8 +50,9 @@ int main(int argc, char** argv){
         int option_socket = 0;
         int option_sharedmem = 0;
         int q = 1;
+        int echo = 0;
         
-        while((opt = getopt(argc, argv, "pcm:q:us")) != -1){
+        while((opt = getopt(argc, argv, "pcm:q:use")) != -1){
     
             switch(opt){
                 case 'p':
@@ -72,6 +91,9 @@ int main(int argc, char** argv){
                     }
 
                     break;
+                case 'e':
+                    echo = 1;
+                    break;
     
                 case '?':
                     errorIncorrectUsage(EINVAL, argv);
@@ -98,16 +120,13 @@ int main(int argc, char** argv){
         fprintf(stderr, "Error: Producer must be provided a message (-m [your-message-here])");
         return errorIncorrectUsage(EINVAL, argv);
     }
-    // TODO: remove when finished
-    printf("Params: isProducer: %d, isSocket: %d, q: %d, message: %s\n", option_producer, option_socket, q, message);
-
     
     // ======================Communication section======================
 
-
     if (option_producer){
-        
         if (option_socket){
+            int i;
+
             int sock_fd;
             struct sockaddr_un address;
 
@@ -124,27 +143,86 @@ int main(int argc, char** argv){
                 perror("connect error");
                 exit(EXIT_FAILURE);
             }
-        
-            if (write(sock_fd, message, strlen(message)) == -1) {
-                perror("write error");
-                exit(EXIT_FAILURE);
+
+            for (i=0; i < q; i++) {
+                // producer-sockets
+            char fixed_msg[256] = {0};
+            strncpy(fixed_msg, message, sizeof(fixed_msg)-1);
+
+                dprintf(sock_fd, "%s\n", message);
+                // if (write(sock_fd, fixed_msg, strlen(fixed_msg)) == -1) {
+                //     perror("write error");
+                //     exit(EXIT_FAILURE);
+                // }
+                
+                if (echo){
+                    printf("Producer sent message: %s\n", message);
+                }
             }
-        
-            printf("Producer sent message: %s\n", message);
-        
+
             close(sock_fd);
             return 0;
         }
         else{
+            // producer-shared memory
+            int shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
+            if (shm_fd == -1) {
+                perror("shm_open");
+                exit(1);
+            }
 
+            ftruncate(shm_fd, sizeof(SharedQueue));
+
+            SharedQueue *queue = (SharedQueue*) mmap(NULL, sizeof(SharedQueue), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+
+            if (queue == MAP_FAILED) {
+                perror("mmap");
+                exit(1);
+            }
+
+            if (queue->size != q) {
+                queue->in = 0;
+                queue->out = 0;
+                queue->size = q;
+            }
+            // delay to allow consumer to start
+
+            sem_t *sem_empty = sem_open(SEM_EMPTY_NAME, O_CREAT, 0666, q);
+            sem_t *sem_full = sem_open(SEM_FULL_NAME, O_CREAT, 0666, 0);
+            sem_t *sem_mutex = sem_open(SEM_MUTEX_NAME, O_CREAT, 0666, 1);
+
+            sleep(15);
+
+            for (int i = 0; i < q; i++) {
+                sleep(1); // delay to allow time to start consumer
+
+                sem_wait(sem_empty);
+                sem_wait(sem_mutex);
+
+                strncpy(queue->messages[queue->in], message, MAX_MSG_LEN - 1);
+                queue->messages[queue->in][MAX_MSG_LEN - 1] = '\0';
+                queue->in = (queue->in + 1) % queue->size;
+
+                sem_post(sem_mutex);
+                sem_post(sem_full);
+
+                if (echo) {
+                    printf("Produced: %s\n", message);
+                }
+            }
+
+            munmap(queue, sizeof(SharedQueue));
+            close(shm_fd);
         }
     }
     else {
-        // consumer
+        // consumer-sockets
         if (option_socket){
+            int i = 0;
+
             int server_fd, client_fd;
             struct sockaddr_un address;
-            char buffer[1024];
+            char buffer[256];
             int bytes_read;
 
             if ((server_fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
@@ -175,14 +253,29 @@ int main(int argc, char** argv){
                 exit(EXIT_FAILURE);
             }
 
-            printf("Consumer connected. Waiting for message...\n");
+            printf("Consumer waiting for message...\n");
 
-            while ((bytes_read = read(client_fd, buffer, sizeof(buffer) - 1)) > 0) {
-                buffer[bytes_read] = '\0';
-                printf("Received message: %s\n", buffer);
+            FILE *stream = fdopen(client_fd, "r");
+            char line[1024];
+
+            // while ((bytes_read = read(client_fd, buffer, sizeof(buffer) - 1)) > 0) {
+                // buffer[bytes_read] = '\0';
+                // if (echo){
+                //     printf("Received message: %s\n", buffer);
+                // }
+            for (i=0; i < q; q++){
+
+                if (fgets(line, sizeof(line), stream) != NULL) {
+                    line[strcspn(line, "\n")] = '\0';  // remove newline
+                    if (echo) {
+                        printf("Received message: %s\n", line);
+                    }
+                } else {
+                    break;
+                }
+                
             }
 
-            // Cleanup
             close(client_fd);
             close(server_fd);
             unlink(SOCKET_PATH);
@@ -191,10 +284,50 @@ int main(int argc, char** argv){
 
         }
         else{
-            // shared memory
-
-        }
-
+            // consumer-shared memory
+                int shm_fd = shm_open(SHM_NAME, O_RDWR, 0666);
+                if (shm_fd == -1) {
+                    perror("shm_open");
+                    exit(1);
+                }
+            
+                SharedQueue *queue = (SharedQueue*) mmap(NULL, sizeof(SharedQueue), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+                if (queue == MAP_FAILED) {
+                    perror("mmap");
+                    exit(1);
+                }
+            
+                sem_t *sem_empty = sem_open(SEM_EMPTY_NAME, 0);
+                sem_t *sem_full = sem_open(SEM_FULL_NAME, 0);
+                sem_t *sem_mutex = sem_open(SEM_MUTEX_NAME, 0);
+            
+                for (int i = 0; i < q; i++) {
+                    sem_wait(sem_full);
+                    sem_wait(sem_mutex);
+            
+                    char msg[MAX_MSG_LEN];
+                    strncpy(msg, queue->messages[queue->out], MAX_MSG_LEN);
+                    msg[MAX_MSG_LEN - 1] = '\0';
+                    queue->out = (queue->out + 1) % queue->size;
+            
+                    sem_post(sem_mutex);
+                    sem_post(sem_empty);
+            
+                    if (echo) {
+                        printf("Received message: %s\n", msg);
+                    }
+                }
+                munmap(queue, sizeof(SharedQueue));
+                close(shm_fd);
+            }
     }
+
+    if (option_sharedmem){
+        shm_unlink(SHM_NAME);
+        sem_unlink(SEM_EMPTY_NAME);
+        sem_unlink(SEM_FULL_NAME);
+        sem_unlink(SEM_MUTEX_NAME);
+    }
+
     return 0;
 }
